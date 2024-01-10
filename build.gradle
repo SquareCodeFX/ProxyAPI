@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+}
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+group = 'net.square.proxy'
+version = '1.0.0'
+description = 'ProxyAPI'
+java.sourceCompatibility = JavaVersion.VERSION_19
+java.targetCompatibility = JavaVersion.VERSION_19
+
+repositories {
+    mavenCentral()
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "squareRepository"
+            url = "https://repo.squarecode.de/releases"
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            pub -> project.shadow.component(pub)
+                groupId = "net.square.proxy"
+                artifactId = "proxyapi"
+                version = "1.0.0"
+        }
+    }
+}
+
+
+dependencies {
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    implementation 'com.google.guava:guava:33.0.0-jre'
+
+    compileOnly 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+}
+
+shadowJar {
+    archiveFileName = "${project.name}-${project.version}.jar"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
