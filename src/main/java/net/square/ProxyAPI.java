@@ -171,27 +171,40 @@ public class ProxyAPI {
     }
 
     /**
-     * Formats the {@link ProxyAPI#API_URL} together with the IPv4 address and the API key.
+     * Formats a URL with the provided address and proxy key, along with additional query parameters based on proxy check settings.
      *
-     * @param address The IPv4 address as plain string.
-     * @return A formatted string {@link ProxyAPI#API_URL}.
+     * @param address The address to include in the URL.
+     * @return The formatted URL as a string.
      */
     private String formatURL(@NonNull String address) {
 
-        String formatted = String.format(API_URL, address, proxyKey);
+        // Use StringBuilder for efficient string concatenation
+        StringBuilder formatted = new StringBuilder(String.format(API_URL, address, proxyKey));
 
-        formatted = formatted + "&vpn=" + this.proxyCheckSettings.getVpn();
-        formatted = formatted + "&asn=" + (this.proxyCheckSettings.isAsn() ? 1 : 0);
-        formatted = formatted + "&node=" + (this.proxyCheckSettings.isNode() ? 1 : 0);
-        formatted = formatted + "&time=" + (this.proxyCheckSettings.isTime() ? 1 : 0);
+        // Append query parameters
+        appendQueryParam(formatted, "vpn", this.proxyCheckSettings.getVpn());
+        appendQueryParam(formatted, "asn", this.proxyCheckSettings.isAsn() ? 1 : 0);
+        appendQueryParam(formatted, "node", this.proxyCheckSettings.isNode() ? 1 : 0);
+        appendQueryParam(formatted, "time", this.proxyCheckSettings.isTime() ? 1 : 0);
+        appendQueryParam(formatted, "port", this.proxyCheckSettings.isPort() ? 1 : 0);
+        appendQueryParam(formatted, "seen", this.proxyCheckSettings.isSeen() ? 1 : 0);
+        appendQueryParam(formatted, "short", this.proxyCheckSettings.isShrt() ? 1 : 0);
+        appendQueryParam(formatted, "risk", String.valueOf(this.proxyCheckSettings.getRisk()));
+        appendQueryParam(formatted, "days", String.valueOf(this.proxyCheckSettings.getDays()));
 
-        formatted = formatted + "&port=" + (this.proxyCheckSettings.isPort() ? 1 : 0);
-        formatted = formatted + "&seen=" + (this.proxyCheckSettings.isSeen() ? 1 : 0);
+        // Convert StringBuilder to String before returning
+        return formatted.toString();
+    }
 
-        formatted = formatted + "&short=" + (this.proxyCheckSettings.isShrt() ? 1 : 0);
-        formatted = formatted + "&risk=" + this.proxyCheckSettings.getRisk();
-        formatted = formatted + "&days=" + this.proxyCheckSettings.getDays();
-
-        return formatted;
+    /**
+     * Appends a query parameter to the StringBuilder with the specified key and value.
+     *
+     * @param builder The StringBuilder to which the parameter will be appended.
+     * @param key The key of the query parameter.
+     * @param value The value of the query parameter.
+     */
+    private void appendQueryParam(StringBuilder builder, String key, Object value) {
+        // Append "&key=value" to the StringBuilder
+        builder.append("&").append(key).append("=").append(value);
     }
 }
