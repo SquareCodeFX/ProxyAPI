@@ -9,7 +9,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 group = 'net.square.proxy'
-version = '1.0.1'
+version = '1.0.2'
 description = 'ProxyAPI'
 java.sourceCompatibility = JavaVersion.VERSION_19
 java.targetCompatibility = JavaVersion.VERSION_19
@@ -34,7 +34,7 @@ publishing {
             pub -> project.shadow.component(pub)
                 groupId = "net.square.proxy"
                 artifactId = "proxyapi"
-                version = "1.0.1"
+                version = "1.0.2"
         }
     }
 }
