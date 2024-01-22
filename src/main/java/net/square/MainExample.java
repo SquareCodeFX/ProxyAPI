@@ -3,8 +3,8 @@ package net.square;
 import com.google.gson.JsonObject;
 import net.square.settings.ProxyCheckSettings;
 
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 // This is an example class that could be like this in your project.
 @SuppressWarnings("unused")
@@ -19,7 +19,7 @@ public class MainExample {
             // do this, otherwise it will take the Default parameter.
             .proxyKey("license_here")
             // How long should the objects stay in the cache?
-            .durationTime(60)
+            .cacheDuration(Duration.ofMinutes(60))
             // Set up your own net.square.settings to limit the response and to get less information.
             .proxyCheckSettings(ProxyCheckSettings.builder()
                                     // More information here: https://proxycheck.io/api/
@@ -35,8 +35,6 @@ public class MainExample {
                                     .shrt(false) // Compress response
                                     .days(2)     // Check our database for Proxies that we saw within the past 48 hours
                                     .build())
-            // What should be the time format? See durationTime
-            .durationUnit(TimeUnit.MINUTES)
             // Build class
             .build();
 

@@ -18,10 +18,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -38,16 +38,12 @@ public class ProxyAPI {
     @Getter
     private String proxyKey = "license_key";
 
-    // How long should an entry be stored?
-    @Getter
-    private int durationTime = 60;
-
     // Settings for the response of the URL
     private ProxyCheckSettings proxyCheckSettings = ProxyCheckSettings.builder().build();
 
     // In which time unit should the duration time last?
     @Getter
-    private TimeUnit durationUnit = TimeUnit.MINUTES;
+    private Duration cacheDuration = Duration.ofMinutes(60);
 
     // I couldn't think of a better way to turn the result from the website into a Java object without any problems.
     // Therefore, I have taken Gson.
@@ -57,7 +53,7 @@ public class ProxyAPI {
     // 60 minutes, after which it is removed and must be fetched again from the website when it is accessed again.
     // I recommend installing an own cache beside this one.
     private final LoadingCache<String, JsonObject> cacheCat = CacheBuilder.newBuilder()
-        .expireAfterAccess(durationTime, durationUnit)
+        .expireAfterWrite(cacheDuration)
         .build(CacheLoader.from(this::fetchData));
 
     /**
@@ -65,7 +61,7 @@ public class ProxyAPI {
      * attempts to fetch this object via {@link ProxyAPI#fetchData(String)}.
      * <br>
      * The cached entry will expire after every access after the given time
-     * (see {@link #durationTime} and {@link #durationUnit}).
+     * (see {@link #cacheDuration}).
      * <br>
      * Will throw if the cache fails during the fetch or when the fetched data returns null.
      *
