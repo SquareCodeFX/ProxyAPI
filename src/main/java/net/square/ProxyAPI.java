@@ -3,7 +3,6 @@ package net.square;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.Builder;
@@ -44,10 +43,6 @@ public class ProxyAPI {
     // In which time unit should the duration time last?
     @Getter
     private Duration cacheDuration = Duration.ofMinutes(60);
-
-    // I couldn't think of a better way to turn the result from the website into a Java object without any problems.
-    // Therefore, I have taken Gson.
-    private final Gson gson = new Gson();
 
     // To avoid unnecessary requests, I have implemented the Guava LoadingCache. This keeps an IP in the cache for
     // 60 minutes, after which it is removed and must be fetched again from the website when it is accessed again.
