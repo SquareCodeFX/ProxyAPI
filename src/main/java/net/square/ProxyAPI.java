@@ -157,8 +157,9 @@ public class ProxyAPI {
      * @throws IOException Thrown when an error occurred while reading from the {@link java.io.InputStream} of the URL.
      */
     private JsonObject parseJsonObjectFromURL(@NonNull String url) throws IOException {
-        return JsonParser.parseReader(
-            new BufferedReader(new InputStreamReader(new URL(url).openStream()))).getAsJsonObject();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(url).openStream()))) {
+            return JsonParser.parseReader(reader).getAsJsonObject();
+        }
     }
 
     /**
