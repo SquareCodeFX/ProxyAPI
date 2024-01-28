@@ -110,8 +110,8 @@ public class ProxyAPI {
             throw new AddressDataFetchingException("Failed to fetch data for address %s".formatted(ipAddress), e);
         }
 
-        Validation.checkNotNull(jsonObject, "Object is null. No internet connection?");
-        Validation.checkNotNull(jsonObject.get("status"), "Invalid object. Maybe timeout?");
+        // Validation.checkNotNull(jsonObject, "Object is null. No internet connection?");
+        // Validation.checkNotNull(jsonObject.get("status"), "Invalid object. Maybe timeout?");
 
         // Processing of reports from https://proxycheck.io
         if (isBlockingResponse(jsonObject)) {
@@ -163,7 +163,8 @@ public class ProxyAPI {
     }
 
     /**
-     * Formats a URL with the provided address and proxy key, along with additional query parameters based on proxy check settings.
+     * Formats a URL with the provided address and proxy key, along with additional query parameters based on proxy
+     * check settings.
      *
      * @param address The address to include in the URL.
      * @return The formatted URL as a string.
@@ -192,8 +193,8 @@ public class ProxyAPI {
      * Appends a query parameter to the StringBuilder with the specified key and value.
      *
      * @param builder The StringBuilder to which the parameter will be appended.
-     * @param key The key of the query parameter.
-     * @param value The value of the query parameter.
+     * @param key     The key of the query parameter.
+     * @param value   The value of the query parameter.
      */
     private void appendQueryParam(StringBuilder builder, String key, Object value) {
         // Append "&key=value" to the StringBuilder
