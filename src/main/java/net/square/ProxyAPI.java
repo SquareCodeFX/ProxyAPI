@@ -9,8 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import net.square.exceptions.AddressDataFetchingException;
-import net.square.exceptions.ProxyCheckBlockingException;
+import net.square.exceptions.impl.AddressDataFetchingException;
+import net.square.exceptions.impl.ProxyCheckBlockingException;
 import net.square.settings.ProxyCheckSettings;
 
 import java.io.BufferedReader;

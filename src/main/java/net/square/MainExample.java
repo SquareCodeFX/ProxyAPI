@@ -1,7 +1,9 @@
 package net.square;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import net.square.settings.ProxyCheckSettings;
+import net.square.wrapper.impl.SuccessWrapper;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
@@ -45,14 +47,10 @@ public class MainExample {
         try {
             JsonObject addressData = proxyAPI.fetchAddressDataForIP(address);
 
-            // And so on...
-            var country  = addressData.get("country").getAsString();
-            var city     = addressData.get("city").getAsString();
-            var provider = addressData.get("provider").getAsString();
+            var successWrapper = new SuccessWrapper(addressData, address);
 
-            System.out.println(country);
-            System.out.println(city);
-            System.out.println(provider);
+            System.out.println(successWrapper.getAddressWrapper().getProxy());
+            System.out.println(successWrapper.getAddressWrapper().getOperatorWrapper().getAnonymity());
 
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
@@ -68,11 +66,10 @@ public class MainExample {
                 throwable.printStackTrace();
             }
 
-            var country  = addressData.get("country").getAsString();
-            var city     = addressData.get("city").getAsString();
-            var provider = addressData.get("provider").getAsString();
-            // And so on...
+            var successWrapper = new SuccessWrapper(addressData, address);
 
+            System.out.println(successWrapper.getAddressWrapper().getProxy());
+            System.out.println(successWrapper.getAddressWrapper().getOperatorWrapper().getAnonymity());
         });
     }
 }
