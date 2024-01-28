@@ -1,6 +1,5 @@
 package net.square;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import net.square.settings.ProxyCheckSettings;
 import net.square.wrapper.impl.SuccessWrapper;
