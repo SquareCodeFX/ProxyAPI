@@ -28,7 +28,8 @@ public class AddressWrapper extends DefaultWrapper {
 
     private final OperatorWrapper operatorWrapper;
 
-    private final JsonObject rawObject;
+    private final JsonObject           rawObject;
+    private final AttackHistoryWrapper attackHistory;
 
     public AddressWrapper(JsonObject jsonObject) {
 
@@ -51,6 +52,9 @@ public class AddressWrapper extends DefaultWrapper {
 
         this.operatorWrapper = new OperatorWrapper(
             getJsonValue(jsonObject, "operator", JsonObject.class, new JsonObject()));
+
+        this.attackHistory = new AttackHistoryWrapper(
+            getJsonValue(jsonObject, "attack history", JsonObject.class, new JsonObject()));
 
         this.lastSeenHuman = getJsonValue(jsonObject, "last seen human", String.class, ERROR);
         this.lastSeenUnix = getJsonValue(jsonObject, "last seen unix", String.class, ERROR);
