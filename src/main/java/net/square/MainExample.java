@@ -1,16 +1,23 @@
 package net.square;
 
-import com.google.gson.JsonObject;
 import net.square.settings.ProxyCheckSettings;
 import net.square.wrapper.impl.SuccessWrapper;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
-// This is an example class that could be like this in your project.
+/**
+ * This class provides an example of how to use the ProxyAPI class to fetch information about a given IP address.
+ * It demonstrates both synchronous and asynchronous methods of accessing the information.
+ */
 @SuppressWarnings("unused")
 public class MainExample {
-    // Main method that starts your process.
+
+    /**
+     * The main method for executing the program. It demonstrates the usage of the ProxyAPI class.
+     *
+     * @param args The command line arguments.
+     */
     public static void main(String[] args) {
 
         // Init with {@link lombok.Builder}
@@ -44,9 +51,7 @@ public class MainExample {
 
         // Thus, it is possible to access the information of an IP synchronously.
         try {
-            JsonObject addressData = proxyAPI.fetchAddressDataForIP(address);
-
-            var successWrapper = new SuccessWrapper(addressData, address);
+            SuccessWrapper successWrapper = proxyAPI.fetchAddressDataForIP(address);
 
             System.out.println(successWrapper.getAddressWrapper().getProxy());
             System.out.println(successWrapper.getAddressWrapper().getOperatorWrapper().getAnonymity());
@@ -56,7 +61,7 @@ public class MainExample {
         }
 
         // Thus, it is possible to access the information of an IP asynchronously.
-        proxyAPI.fetchAddressDataForIPAsync(address).whenComplete((addressData, throwable) -> {
+        proxyAPI.fetchAddressDataForIPAsync(address).whenComplete((successWrapper, throwable) -> {
 
             // The exception is always null if everything worked properly.
             // If an error occurred during the process, this exception will
@@ -64,8 +69,6 @@ public class MainExample {
             if (throwable != null) {
                 throwable.printStackTrace();
             }
-
-            var successWrapper = new SuccessWrapper(addressData, address);
 
             System.out.println(successWrapper.getAddressWrapper().getProxy());
             System.out.println(successWrapper.getAddressWrapper().getOperatorWrapper().getAnonymity());

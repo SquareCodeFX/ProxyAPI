@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import net.square.exceptions.impl.AddressDataFetchingException;
 import net.square.exceptions.impl.ProxyCheckBlockingException;
 import net.square.settings.ProxyCheckSettings;
+import net.square.wrapper.impl.SuccessWrapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,67 +22,73 @@ import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 @SuppressWarnings({"unused", "UnusedAssignment"})
 @Builder
 public class ProxyAPI {
 
-    // https://proxycheck.io is an online security service offering Proxy
-    // and VPN detection and generalised IP location information.
+    /**
+     * The URL for the API endpoint.
+     */
     private static final String API_URL = "https://proxycheck.io/v2/%s?key=%s";
 
-    // If you have a plan on https://proxycheck.io, you should enter your key here. If you don't have one, you are
-    // free to make 1000 requests per day for your own server/computer IP. I recommend buying a plan though.
+    /**
+     * The license key used for accessing the proxy check API.
+     */
     @Getter
     private String proxyKey = "license_key";
 
-    // Settings for the response of the URL
+    /**
+     * Represents the settings for proxy checking.
+     */
     private ProxyCheckSettings proxyCheckSettings = ProxyCheckSettings.builder().build();
 
-    // In which time unit should the duration time last?
+    /**
+     * The duration for which a cached entry will remain valid.
+     */
     @Getter
     private Duration cacheDuration = Duration.ofMinutes(60);
 
-    // To avoid unnecessary requests, I have implemented the Guava LoadingCache. This keeps an IP in the cache for
-    // 60 minutes, after which it is removed and must be fetched again from the website when it is accessed again.
-    // I recommend installing an own cache beside this one.
-    private final LoadingCache<String, JsonObject> cacheCat = CacheBuilder.newBuilder()
+    /**
+     * The cacheCat variable is an instance of the Guava LoadingCache class. This cache is used to store IP addresses
+     * and their corresponding JsonObject data retrieved from a website
+     * .
+     * The cacheCat instance is built using the CacheBuilder class, which allows configuring various cache properties
+     * and behaviors.
+     * The cache is configured to expire entries after a certain duration specified by the cacheDuration variable.
+     * When an entry expires, it will be removed from the cache and must be fetched again from the website when
+     * accessed again.
+     * The cacheCat instance uses a CacheLoader implementation to fetch the data for a given IP address by calling
+     * the fetchData method.
+     * The result is then stored in the cache. If the fetchData method returns null, an exception will be thrown.
+     * It is recommended to install a separate cache alongside this cache for better performance and flexibility.
+     */
+    private final LoadingCache<String, SuccessWrapper> cacheCat = CacheBuilder.newBuilder()
         .expireAfterWrite(cacheDuration)
         .build(CacheLoader.from(this::fetchData));
 
     /**
-     * Looks up an {@link JsonObject} object for the passed IPv4 address inside the cache. If not cached, the cache
-     * attempts to fetch this object via {@link ProxyAPI#fetchData(String)}.
-     * <br>
-     * The cached entry will expire after every access after the given time
-     * (see {@link #cacheDuration}).
-     * <br>
-     * Will throw if the cache fails during the fetch or when the fetched data returns null.
+     * Fetches address data for the given IP address.
      *
-     * @param ipAddress A IPv4 address in string representation.
-     * @return An {@link JsonObject} object for the given ipAddress
-     * @throws ExecutionException Thrown when cache returned null or when an exception was thrown inside the cache.
+     * @param ipAddress The IP address for which to fetch the data.
+     * @return The {@link SuccessWrapper} object containing the fetched address data.
+     * @throws ExecutionException If an error occurs during the execution of the method.
+     * @throws NullPointerException If the ipAddress argument is null.
      */
-    public JsonObject fetchAddressDataForIP(@NonNull String ipAddress) throws ExecutionException {
+    public SuccessWrapper fetchAddressDataForIP(@NonNull String ipAddress) throws ExecutionException {
         // Checks if the passed argument is null. There are some jokers :P
         Validation.checkNotNull(ipAddress, "Field ipAddress cannot be null");
         return cacheCat.get(ipAddress);
     }
 
     /**
-     * Wraps the execution of {@link #fetchAddressDataForIP(String)} inside a {@link CompletableFuture} to retrieve
-     * its result asynchronously.
-     * <br>
-     * <p>
-     * Thrown {@link Exception}s, like {@link AddressDataFetchingException}, have to be handled by using
-     * {@link CompletableFuture#exceptionally(Function)} or {@link CompletableFuture#whenComplete(BiConsumer)}.
+     * Fetches address data for the given IP address asynchronously.
      *
-     * @param ipAddress A IPv4 address in string representation.
-     * @return The {@link JsonObject} object
+     * @param ipAddress The IP address for which to fetch the data.
+     * @return A CompletableFuture that resolves to the {@link SuccessWrapper} object containing the fetched address data.
+     * @throws NullPointerException If the ipAddress argument is null.
      */
-    public CompletableFuture<JsonObject> fetchAddressDataForIPAsync(@NonNull String ipAddress) {
+    public CompletableFuture<SuccessWrapper> fetchAddressDataForIPAsync(@NonNull String ipAddress) {
         // Checks if the passed argument is null. There are some jokers :P
         Validation.checkNotNull(ipAddress, "Field ipAddress cannot be null");
         return CompletableFuture.supplyAsync(() -> {
@@ -94,15 +101,15 @@ public class ProxyAPI {
     }
 
     /**
-     * Converts the response body received by the HTTP GET request to the
-     * <a href="https://proxycheck.io">https://proxycheck.io</a> API
-     * to an {@link JsonObject} object.
+     * Fetches data for the given IP address.
      *
-     * @param ipAddress A IPv4 address represented as a string.
-     * @return An {@link JsonObject} object containing the information of the response body.
+     * @param ipAddress The IP address for which to fetch the data.
+     * @return The SuccessWrapper object containing the fetched address data.
+     * @throws AddressDataFetchingException If an error occurs during the fetching of the data.
+     * @throws NullPointerException If the ipAddress argument is null.
      */
     @SneakyThrows
-    private JsonObject fetchData(@NonNull String ipAddress) {
+    private SuccessWrapper fetchData(@NonNull String ipAddress) {
         JsonObject jsonObject;
         try {
             jsonObject = parseJsonObjectFromURL(formatURL(ipAddress));
@@ -121,27 +128,14 @@ public class ProxyAPI {
 
             throw new ProxyCheckBlockingException("%s: %s".formatted(status, message));
         }
-        return jsonObject;
+        return new SuccessWrapper(jsonObject, ipAddress);
     }
 
     /**
-     * This method processes the status as well as the messages from
-     * <a href="https://proxycheck.io">https://proxycheck.io</a>
-     * and passes them to the consumer in the form of an exception.
-     * <br>
-     * <p>
-     * In this method, not all messages from <a href="https://proxycheck.io">https://proxycheck.io</a>
-     * are processed. Only the problems that have an
-     * impact on
-     * the functionality of the API are caught here. If you want to have a full list of all possible errors you can
-     * have a look at it here:
-     * <a href="https://proxycheck.io/api/#test_console">https://proxycheck.io/api/#test_console</a>
+     * Checks if the response is blocking based on the status field of the provided JsonObject.
      *
-     * @param jsonObject The object from the <a href="https://proxycheck.io">https://proxycheck.io</a> website
-     *                   <p>
-     *                   It will throw an {@link ProxyCheckBlockingException} is thrown if a message is present
-     *                   in the return value. Since these are always negative in nature, the exception was named
-     *                   MalfunctionException.
+     * @param jsonObject The JsonObject to check.
+     * @return true if the response is blocking, false otherwise.
      */
     @SneakyThrows
     private boolean isBlockingResponse(@NonNull JsonObject jsonObject) {
@@ -150,11 +144,12 @@ public class ProxyAPI {
     }
 
     /**
-     * Converts the response {@link URL#openStream()} of a URL to a {@link JsonObject}.
+     * Parses a JsonObject from a given URL.
      *
-     * @param url The URL string from which to read and convert the response of.
-     * @return The object if it was successfully converted.
-     * @throws IOException Thrown when an error occurred while reading from the {@link java.io.InputStream} of the URL.
+     * @param url The URL to fetch the JsonObject from.
+     * @return The parsed JsonObject.
+     * @throws IOException If an error occurs during the fetching of the JsonObject.
+     * @throws NullPointerException If the url argument is null.
      */
     private JsonObject parseJsonObjectFromURL(@NonNull String url) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(url).openStream()))) {
@@ -163,10 +158,9 @@ public class ProxyAPI {
     }
 
     /**
-     * Formats a URL with the provided address and proxy key, along with additional query parameters based on proxy
-     * check settings.
+     * Formats the URL for fetching data related to the given address.
      *
-     * @param address The address to include in the URL.
+     * @param address The address for which to format the URL.
      * @return The formatted URL as a string.
      */
     private String formatURL(@NonNull String address) {
@@ -190,11 +184,11 @@ public class ProxyAPI {
     }
 
     /**
-     * Appends a query parameter to the StringBuilder with the specified key and value.
+     * Appends a query parameter to a StringBuilder.
      *
-     * @param builder The StringBuilder to which the parameter will be appended.
-     * @param key     The key of the query parameter.
-     * @param value   The value of the query parameter.
+     * @param builder The StringBuilder to append the query parameter to.
+     * @param key The key of the query parameter.
+     * @param value The value of the query parameter.
      */
     private void appendQueryParam(StringBuilder builder, String key, Object value) {
         // Append "&key=value" to the StringBuilder

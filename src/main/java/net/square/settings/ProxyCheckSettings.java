@@ -3,7 +3,10 @@ package net.square.settings;
 import lombok.Builder;
 import lombok.Getter;
 
-@SuppressWarnings("UnusedAssignment")
+/**
+ * The ProxyCheckSettings class represents the settings for checking proxy information.
+ * These settings include options for checking ASNs, nodes, time, ports, seen status, risk score, and time duration.
+ */
 @Builder
 @Getter
 public class ProxyCheckSettings {
